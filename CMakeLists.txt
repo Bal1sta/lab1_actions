@@ -40,14 +40,30 @@ endif()
 
 install(TARGETS helloworld_cli RUNTIME DESTINATION bin)
 
-# Настройки для CPack для создания DEB пакета
-set(CPACK_GENERATOR "DEB")
-set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
+# Установка генератора CPack для macOS или Linux
+if (APPLE)
+    set(CPACK_GENERATOR "Bundle")  # Для создания .app или .pkg на macOS
+else()
+    set(CPACK_GENERATOR "DEB")  # Для создания .deb на Linux
+endif()
+
+# Установка имени пакета для CPack
+set(CPACK_BUNDLE_NAME "LABABAB")  # Замените на имя вашего приложения
+
+# Установка пути к Info.plist для CPack
+set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist")  # Укажите правильный путь к вашему Info.plist
+
+# Установка пути к иконке для CPack
+set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/ic.icns")  # Укажите правильный путь к вашему файлу иконки
+
+# Установка версии пакета для CPack
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_CONTACT "example@example.com")
+
+# Дополнительные метаданные (по желанию)
 
 include(CPack)
 
 enable_testing()
+
 add_test(test_version test_version)
