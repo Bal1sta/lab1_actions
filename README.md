@@ -1,1 +1,1 @@
-# lab1_actionsыв
+# Шаблон настройки GitHub Actions
