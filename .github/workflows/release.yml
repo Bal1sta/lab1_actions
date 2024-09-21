@@ -7,27 +7,35 @@ on:
       - feature/github_actions
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     permissions: write-all
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
           submodules: true
       
-      - run: |
-          sudo apt-get update && sudo apt-get install -y libboost-test-dev libglfw3-dev libglm-dev || { echo 'Failed to install dependencies'; exit 1; }
+      - name: Install Dependencies
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            sudo apt-get update && sudo apt-get install -y libboost-test-dev libglfw3-dev libglm-dev || { echo 'Failed to install dependencies'; exit 1; }
+          else
+            brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; }
+          fi
       
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      - name: Build Project
+        run: |
+          cmake . -DPATCH_VERSION=${{ github.run_number }}
+          cmake --build .
+          cmake --build . --target package
       
-      - run: cmake --build .
-      
-      - run: cmake --build . --target test
-      
-      - run: cmake --build . --target package
-
-      - name: Check if tag exists
-        id: check_tag_exists
+      - name: Check if tag exists 
+        id: check_tag_exists 
         run: |
           TAG="release-${{ github.run_number }}-${{ github.sha }}"
           git tag -l | grep -q "$TAG" && echo "tag_exists=true" >> $GITHUB_ENV || echo "tag_exists=false" >> $GITHUB_ENV
@@ -52,35 +60,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}  
-          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb  
-          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb  
-          asset_content_type: application/vnd.debian.binary-package 
-
-  build-macos:
-    runs-on: macos-latest
-    permissions: write-all
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      
-      - run: |
-          brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; }
-      
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      
-      - run: cmake --build .
-      
-      - run: cmake --build . --target test
-      
-      - run: cmake --build . --target package
-      
-      - name: Check if tag exists for macOS 
-        id: check_tag_exists_macos 
-        run: |
-          TAG="release-${{ github.run_number }}-${{ github.sha }}"
-          if git tag -l | grep -q "$TAG"; then
-            echo "tag_exists=true" >> $GITHUB_ENV;
-          else
-            echo "tag_exists=false" >> $GITHUB_ENV;
-          fi
+          asset_path: ${{ matrix.os == 'ubuntu-latest' && format('./helloworld-0.0.{0}-Linux.deb', github.run_number) || format('./helloworld-0.0.{0}-macOS.pkg', github.run_number) }}  
+          asset_name: ${{ matrix.os == 'ubuntu-latest' && format('helloworld-0.0.{0}-Linux.deb', github.run_number) || format('helloworld-0.0.{0}-macOS.pkg', github.run_number) }}  
+          asset_content_type: ${{ matrix.os == 'ubuntu-latest' && 'application/vnd.debian.binary-package' || 'application/octet-stream' }} 
