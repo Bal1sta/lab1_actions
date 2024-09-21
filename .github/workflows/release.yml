@@ -84,3 +84,40 @@ jobs:
           else
             echo "tag_exists=false" >> $GITHUB_ENV;
           fi
+        
+  create-releases:
+    needs: [build-linux, build-macos]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: linux-artifact
+          
+      - name: Download macOS artifact  
+        uses: actions/download-artifact@v2
+        with:
+          name: macos-artifact
+          
+      - name: Create Linux Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: Linux Release ${{ github.ref }}
+          files: linux-artifact.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Create macOS Release  
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}  
+          name: macOS Release ${{ github.ref }}
+          files: macos-artifact.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
