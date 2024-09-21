@@ -48,8 +48,7 @@ else()
 endif()
 
 # Установка имени пакета для CPack
-set(CPACK_BUNDLE_NAME "helloworld-$ENV{GITHUB_RUN_NUMBER}-$ENV{GITHUB_SHA}")
-set(CPACK_PACKAGE_FILE_NAME "helloworld-$ENV{GITHUB_RUN_NUMBER}-$ENV{GITHUB_SHA}")
+set(CPACK_BUNDLE_NAME "LABABAB")  # Замените на имя вашего приложения
 
 # Установка пути к Info.plist для CPack
 set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist")  # Укажите правильный путь к вашему Info.plist

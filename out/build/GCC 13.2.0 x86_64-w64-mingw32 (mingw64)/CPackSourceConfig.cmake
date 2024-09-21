@@ -12,7 +12,7 @@
 
 set(CPACK_BUILD_SOURCE_DIRS "C:/lAbA/lab1_actions;C:/lAbA/lab1_actions/out/build/GCC 13.2.0 x86_64-w64-mingw32 (mingw64)")
 set(CPACK_BUNDLE_ICON "C:/lAbA/lab1_actions/resources/ic.icns")
-set(CPACK_BUNDLE_NAME "helloworld--")
+set(CPACK_BUNDLE_NAME "LABABAB")
 set(CPACK_BUNDLE_PLIST "C:/lAbA/lab1_actions/resources/Info.plist")
 set(CPACK_CMAKE_GENERATOR "Ninja")
 set(CPACK_COMPONENT_UNSPECIFIED_HIDDEN "TRUE")
