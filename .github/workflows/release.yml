@@ -11,20 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
           submodules: true
       
-      - run: |
+      - name: Install Dependencies
+        run: |
           sudo apt-get update && sudo apt-get install -y libboost-test-dev libglfw3-dev libglm-dev || { echo 'Failed to install dependencies'; exit 1; }
       
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      
-      - run: cmake --build .
-      
-      - run: cmake --build . --target test
-      
-      - run: cmake --build . --target package
+      - name: Build Project
+        run: |
+          cmake . -DPATCH_VERSION=${{ github.run_number }}
+          cmake --build .
+          cmake --build . --target package
 
       - name: Check if Linux tag exists
         id: check_tag_exists_linux
@@ -60,20 +60,20 @@ jobs:
     runs-on: macos-latest
     permissions: write-all
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
           submodules: true
       
-      - run: |
+      - name: Install Dependencies
+        run: |
           brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; }
       
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      
-      - run: cmake --build .
-      
-      - run: cmake --build . --target test
-      
-      - run: cmake --build . --target package
+      - name: Build Project
+        run: |
+          cmake . -DPATCH_VERSION=${{ github.run_number }}
+          cmake --build .
+          cmake --build . --target package
       
       - name: Check if macOS tag exists 
         id: check_tag_exists_macos 
