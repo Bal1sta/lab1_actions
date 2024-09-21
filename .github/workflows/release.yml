@@ -1,86 +1,204 @@
 name: CI/CD
 
-on:
-  push:
-    branches:
-      - main
-      - feature/github_actions
+on: release
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      
-      - run: |
-          sudo apt-get update && sudo apt-get install -y libboost-test-dev libglfw3-dev libglm-dev || { echo 'Failed to install dependencies'; exit 1; }
-      
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      
-      - run: cmake --build .
-      
-      - run: cmake --build . --target test
-      
-      - run: cmake --build . --target package
 
-      - name: Check if tag exists
-        id: check_tag_exists
-        run: |
-          TAG="release-${{ github.run_number }}-${{ github.sha }}"
-          git tag -l | grep -q "$TAG" && echo "tag_exists=true" >> $GITHUB_ENV || echo "tag_exists=false" >> $GITHUB_ENV
+ build-linux: 
 
-      - name: Create Release
-        id: create_release
-        if: env.tag_exists == 'false'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "release-${{ github.run_number }}-${{ github.sha }}"
-          release_name: Release ${{ github.run_number }}
-          draft: false
-          prerelease: false 
+   runs-on: ubuntu-latest 
 
-      - name: Upload Release Asset 
-        id: upload-release-asset 
-        if: env.tag_exists == 'false'
-        uses: actions/upload-release-asset@v1  
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}  
-          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb  
-          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb  
-          asset_content_type: application/vnd.debian.binary-package 
+   steps: 
 
-  build-macos:
-    runs-on: macos-latest
-    permissions: write-all
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      
-      - run: |
-          brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; }
-      
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      
-      - run: cmake --build .
-      
-      - run: cmake --build . --target test
-      
-      - run: cmake --build . --target package
-      
-      - name: Check if tag exists for macOS 
-        id: check_tag_exists_macos 
-        run: |
-          TAG="release-${{ github.run_number }}-${{ github.sha }}"
-          if git tag -l | grep -q "$TAG"; then
-            echo "tag_exists=true" >> $GITHUB_ENV;
-          else
-            echo "tag_exists=false" >> $GITHUB_ENV;
-          fi
+   - uses: actions/checkout@v1 
+
+   - name: Install bluetooth 
+
+     run: sudo apt-get install -y build-essential libbluetooth-dev 
+
+   - name: Install dependencies 
+
+     run: npm install 
+
+   - name: Build linux 
+
+     run: npm run build:linux 
+
+   - name: Creating out 
+
+     run: | 
+
+       mkdir out 
+
+       cp dist/linux.AppImage out/
+
+       cp dist/linux.deb out/ 
+
+     - name: Upload build 
+
+       uses: actions/upload-artifact@master 
+
+       with: 
+
+         name: linux 
+
+         path: out
+
+
+
+ build-mac: 
+
+    runs-on: macOS-latest 
+
+    steps: 
+
+    - uses: actions/checkout@v1 
+
+    - uses: actions/setup-node@v1 
+
+      with: node-version: '8.x' 
+
+    - name: Install dependencies 
+
+      run: npm install 
+
+    - name: Build mac 
+
+      run: npm run build:mac 
+
+    - name: Creating out 
+
+      run: | 
+
+        mkdir out 
+
+        cp dist/mac.pkg out/ 
+
+      - name: Upload build 
+
+        uses: actions/upload-artifact@master 
+
+        with: 
+
+          name: mac 
+
+          path: out 
+
+  build-win: 
+
+    runs-on: windows-latest 
+
+    steps: 
+
+    - uses: actions/checkout@v1 
+
+    - uses: actions/setup-node@v1 
+
+      with: node-version: '8.x' 
+
+    - name: Install dependencies 
+
+      run: npm install 
+
+    - name: Build win 
+
+      run: npm run build:win 
+
+    - name: Creating out 
+
+      run: | 
+
+        mkdir out 
+
+        copy dist\win.exe out\ 
+
+    - name: Upload build 
+
+      uses: actions/upload-artifact@master 
+
+      with: 
+
+        name: win 
+
+        path: out
+upload: 
+
+  runs-on: ubuntu-latest 
+
+  needs: [build-linux, build-mac, build-win] 
+
+  steps: 
+
+  - uses: actions/checkout@v1 
+
+  - name: Download linux artifact 
+
+    uses: actions/download-artifact@master 
+
+    with: 
+
+      name: linux 
+
+  - name: Download mac artifact 
+
+    uses: actions/download-artifact@master 
+
+    with: 
+
+      name: mac 
+
+  - name: Download win artifact 
+
+    uses: actions/download-artifact@master 
+
+    with: 
+
+      name: win 
+
+  - name: Upload to Release deb 
+
+    uses: JasonEtco/upload-to-release@v0.1.1 
+
+    env: 
+
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+    with: 
+
+      args: linux/linux.deb application/vnd.debian.binary-package 
+
+   - name: Upload to Release AppImage 
+
+     uses: JasonEtco/upload-to-release@v0.1.1 
+
+     env: 
+
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+     with: 
+
+       args: linux/linux.AppImage application/x-executable 
+
+   - name: Upload to Release pkg 
+
+     uses: JasonEtco/upload-to-release@v0.31.1 
+
+     env: 
+
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+     with: 
+
+       args: mac/mac.pkg application/x-xar 
+
+   - name: Upload to Release exe 
+
+     uses: JasonEtco/upload-to-release@v0.1.1 
+
+     env: 
+
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+     with: 
+
+       args: win/win.exe application/octet-stream
