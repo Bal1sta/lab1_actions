@@ -1406,6 +1406,42 @@
 			"value" : "[C:/msys64/mingw64/lib/cmake/Boost-1.84.0/BoostConfig.cmake][cfound components: unit_test_framework ][v1.84.0()]"
 		},
 		{
+			"name" : "HelloWorld_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "C:/lAbA/lab1_actions/out/build/GCC 13.2.0 x86_64-w64-mingw32 (mingw64)"
+		},
+		{
+			"name" : "HelloWorld_IS_TOP_LEVEL",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "ON"
+		},
+		{
+			"name" : "HelloWorld_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "C:/lAbA/lab1_actions"
+		},
+		{
 			"name" : "PATCH_VERSION",
 			"properties" : 
 			[

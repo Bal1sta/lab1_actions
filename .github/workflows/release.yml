@@ -1,37 +1,86 @@
-name: C++ CI
+name: CI/CD
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - feature/github_actions
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]  # Указываем операционные системы
-
+  build-linux:
+    runs-on: ubuntu-latest
+    permissions: write-all
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        
-      - name: Set up CMake
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      
+      - run: |
+          sudo apt-get update && sudo apt-get install -y libboost-test-dev libglfw3-dev libglm-dev || { echo 'Failed to install dependencies'; exit 1; }
+      
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      
+      - run: cmake --build .
+      
+      - run: cmake --build . --target test
+      
+      - run: cmake --build . --target package
+
+      - name: Check if tag exists
+        id: check_tag_exists
         run: |
-          if [[ "${{ runner.os }}" == "Linux" ]]; then
-            sudo apt-get install cmake g++ -y  # Установка CMake и компилятора для Linux
-          elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            brew install cmake gcc  # Установка CMake и компилятора для macOS
+          TAG="release-${{ github.run_number }}-${{ github.sha }}"
+          git tag -l | grep -q "$TAG" && echo "tag_exists=true" >> $GITHUB_ENV || echo "tag_exists=false" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        if: env.tag_exists == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "release-${{ github.run_number }}-${{ github.sha }}"
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false 
+
+      - name: Upload Release Asset 
+        id: upload-release-asset 
+        if: env.tag_exists == 'false'
+        uses: actions/upload-release-asset@v1  
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb  
+          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb  
+          asset_content_type: application/vnd.debian.binary-package 
+
+  build-macos:
+    runs-on: macos-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      
+      - run: |
+          brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; }
+      
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      
+      - run: cmake --build .
+      
+      - run: cmake --build . --target test
+      
+      - run: cmake --build . --target package
+      
+      - name: Check if tag exists for macOS 
+        id: check_tag_exists_macos 
+        run: |
+          TAG="release-${{ github.run_number }}-${{ github.sha }}"
+          if git tag -l | grep -q "$TAG"; then
+            echo "tag_exists=true" >> $GITHUB_ENV;
+          else
+            echo "tag_exists=false" >> $GITHUB_ENV;
           fi
-
-      - name: Build with CMake
-        run: |
-          mkdir build           # Создание директории для сборки
-          cd build              # Переход в директорию сборки
-          cmake ..              # Генерация файлов сборки
-          make                  # Сборка проекта
-
-      - name: Run
-        run: |
-          ./build/hello        # Запуск скомпилированной программы
