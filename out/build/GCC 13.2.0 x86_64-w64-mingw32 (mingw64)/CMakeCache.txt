@@ -162,7 +162,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=helloworld
+CMAKE_PROJECT_NAME:STATIC=HelloWorld
 
 //Value Computed by CMake
 CMAKE_PROJECT_VERSION:STATIC=0.0.1
@@ -267,6 +267,15 @@ CPACK_SOURCE_7Z:BOOL=ON
 
 //Enable to build ZIP source packages
 CPACK_SOURCE_ZIP:BOOL=ON
+
+//Value Computed by CMake
+HelloWorld_BINARY_DIR:STATIC=C:/lAbA/lab1_actions/out/build/GCC 13.2.0 x86_64-w64-mingw32 (mingw64)
+
+//Value Computed by CMake
+HelloWorld_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+HelloWorld_SOURCE_DIR:STATIC=C:/lAbA/lab1_actions
 
 //The directory containing a CMake configuration file for boost_headers.
 boost_headers_DIR:PATH=C:/msys64/mingw64/lib/cmake/boost_headers-1.84.0
