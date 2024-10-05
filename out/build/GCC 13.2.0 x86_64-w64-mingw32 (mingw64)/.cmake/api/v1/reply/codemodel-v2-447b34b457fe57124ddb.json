@@ -7,7 +7,7 @@
 				{
 					"build" : ".",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-.-Debug-29de75e4503e69bcb193.json",
+					"jsonFile" : "directory-.-Debug-61fed70d948b13a6a2f4.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.10"
@@ -44,21 +44,21 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "helloworld::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-helloworld-Debug-d6d981c62821f689969e.json",
+					"jsonFile" : "target-helloworld-Debug-2541a89f2388bc3f9695.json",
 					"name" : "helloworld",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "helloworld_cli::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-helloworld_cli-Debug-19678d19546ad5d2737a.json",
+					"jsonFile" : "target-helloworld_cli-Debug-0bd2cecf04baf4d088a0.json",
 					"name" : "helloworld_cli",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "test_version::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-test_version-Debug-1cb3568575dba4dcd652.json",
+					"jsonFile" : "target-test_version-Debug-7435840bae9ae239680d.json",
 					"name" : "test_version",
 					"projectIndex" : 0
 				}
