@@ -1,83 +1,67 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10) # Устанавливает минимальную версию CMake, необходимую для сборки проекта.
 
-set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
-set(PROJECT_VERSION 0.0.${PATCH_VERSION})
+set(PATCH_VERSION "1" CACHE INTERNAL "Patch version") # Определяет версию патча как внутреннюю переменную.
+set(PROJECT_VERSION 0.0.${PATCH_VERSION}) # Формирует полную версию проекта, включая номер патча.
 
-project(helloworld VERSION ${PROJECT_VERSION})
+project(helloworld VERSION ${PROJECT_VERSION}) # Определяет название проекта и его версию.
 
-find_package(Boost COMPONENTS unit_test_framework REQUIRED) #Выполняет поиск библиотеки Boost, в частности, unit_test_framework компонента, который требуется для тестирования. Если он не найден, CMake выдаст сообщение об ошибке.
+find_package(Boost COMPONENTS unit_test_framework REQUIRED) # Находит библиотеку Boost, необходимую для тестирования. Если не найдена, выдаст ошибку.
 
-configure_file(version.h.in version.h)
+configure_file(version.h.in version.h) # Настраивает файл version.h на основе шаблона version.h.in.
 
-add_executable(helloworld_cli main.cpp)
-add_library(helloworld lib.cpp)
-add_executable(test_version test_version.cpp) #Создает другой исполняемый целевой файл с именем test_version из исходного файла test_version.cpp, который, вероятно, используется для запуска тестов.
+add_executable(helloworld_cli main.cpp) # Создает исполняемый файл helloworld_cli из исходного файла main.cpp.
+add_library(helloworld lib.cpp) # Создает библиотеку helloworld из исходного файла lib.cpp.
+add_executable(test_version test_version.cpp) # Создает исполняемый файл test_version из test_version.cpp для запуска тестов.
 
-
-
-#Устанавливает свойства для нескольких целевых объектов (helloworld_cli, helloworld и test_version) для обеспечения использования стандарта C ++ 14 во время компиляции. Опция CXX_STANDARD_REQUIRED ON гарантирует, что если C ++ 14 недоступен, будет выдана ошибка.
+# Устанавливает свойства для целевых объектов, чтобы использовать стандарт C++14 во время компиляции.
 set_target_properties(helloworld_cli helloworld test_version PROPERTIES
-    CXX_STANDARD 14
-    CXX_STANDARD_REQUIRED ON
+    CXX_STANDARD 14 # Устанавливает стандарт C++14.
+    CXX_STANDARD_REQUIRED ON # Обеспечивает ошибку, если стандарт C++14 недоступен.
 )
 
-
-#Определяет включаемые каталоги для helloworld библиотеки, делая двоичный каталог доступным для нее частным образом (доступным только в пределах этого целевого объекта).
+# Определяет включаемые каталоги для библиотеки helloworld, делая двоичный каталог доступным только для нее.
 target_include_directories(helloworld PRIVATE "${CMAKE_BINARY_DIR}")
 
-
-
-
-#Устанавливает свойства специально для test_version целевого объекта, определяя определение во время компиляции (BOOST_TEST_DYN_LINK) и включая каталог Boost include, который необходим для связывания с библиотеками Boost.
+# Устанавливает свойства для test_version, определяя макрос BOOST_TEST_DYN_LINK и включая каталог Boost.
 set_target_properties(test_version PROPERTIES
-    COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK
-    INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+    COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK # Определяет макрос для динамической линковки Boost.
+    INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR} # Включает директорию с заголовочными файлами Boost.
 )
 
-target_link_libraries(helloworld_cli PRIVATE helloworld) #Связывает helloworld библиотеку с helloworld_cli исполняемым файлом, позволяя ему использовать функции и классы, определенные в этой библиотеке.
-target_link_libraries(test_version ${Boost_LIBRARIES} helloworld) #Связывает библиотеки Boost и helloworld библиотеку с test_version исполняемым файлом, позволяя ему использовать как платформу тестирования Boost, так и любые функциональные возможности библиотеки.
+target_link_libraries(helloworld_cli PRIVATE helloworld) # Связывает библиотеку helloworld с исполняемым файлом helloworld_cli.
+target_link_libraries(test_version ${Boost_LIBRARIES} helloworld) # Связывает библиотеки Boost и helloworld с исполняемым файлом test_version.
 
-
-
-#Устанавливает уровни предупреждения компилятора в зависимости от используемого компилятора:
-#При использовании компилятора Microsoft Visual Studio (MSVC) он устанавливает уровень предупреждения 4 (/W4), который является довольно строгим.
-#Для других компиляторов (таких как GCC или Clang) он включает различные предупреждающие флаги (-Wall, -Wextra и т.д.) И рассматривает предупреждения как ошибки (-Werror), обеспечивая высокое качество кода.
+# Устанавливает уровни предупреждений компилятора в зависимости от используемого компилятора.
 if (MSVC)
-    target_compile_options(helloworld_cli PRIVATE /W4)
+    target_compile_options(helloworld_cli PRIVATE /W4) # Устанавливает уровень предупреждений 4 для MSVC.
     target_compile_options(helloworld PRIVATE /W4)
     target_compile_options(test_version PRIVATE /W4)
 else ()
-    target_compile_options(helloworld_cli PRIVATE -Wall -Wextra -pedantic -Werror)
+    target_compile_options(helloworld_cli PRIVATE -Wall -Wextra -pedantic -Werror) # Устанавливает строгие предупреждения для GCC/Clang.
     target_compile_options(helloworld PRIVATE -Wall -Wextra -pedantic -Werror)
     target_compile_options(test_version PRIVATE -Wall -Wextra -pedantic -Werror)
 endif()
 
-install(TARGETS helloworld_cli RUNTIME DESTINATION bin) #Определяет правила установки для проекта, указывая, что при установке helloworld_cli исполняемый файл должен быть помещен в каталог с именем bin.
+install(TARGETS helloworld_cli RUNTIME DESTINATION bin) # Определяет правила установки для helloworld_cli в каталог bin.
 
-# Установка генератора CPack для macOS или Linux
+# Установка генератора CPack в зависимости от платформы.
 if (APPLE)
-    set(CPACK_GENERATOR "Bundle")  # Для создания .app или .pkg на macOS
+    set(CPACK_GENERATOR "Bundle")  # Для создания пакетов на macOS.
 else()
-    set(CPACK_GENERATOR "DEB")  # Для создания .deb на Linux
+    set(CPACK_GENERATOR "DEB")  # Для создания .deb на Linux.
 endif()
 
-# Установка имени пакета для CPack
-set(CPACK_BUNDLE_NAME "LABABAB")  # Замените на имя вашего приложения
+set(CPACK_BUNDLE_NAME "LABABAB")  # Задает имя пакета для CPack.
 
-# Установка пути к Info.plist для CPack
-set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist")  # Укажите правильный путь к вашему Info.plist
+set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist")  # Указывает путь к Info.plist для macOS.
 
-# Установка пути к иконке для CPack
-set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/ic.icns")  # Укажите правильный путь к вашему файлу иконки
+set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/ic.icns")  # Указывает путь к файлу иконки.
 
-# Установка версии пакета для CPack
-set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_CONTACT "example@example.com")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}") # Устанавливает версию пакета для CPack.
+set(CPACK_PACKAGE_CONTACT "example@example.com") # Указывает контактную информацию для пакета.
 
-# Дополнительные метаданные (по желанию)
+include(CPack) # Включает поддержку CPack для упаковки проекта.
 
-include(CPack)
+enable_testing() # Включает поддержку тестирования в проекте, позволяя определять и запускать тесты.
 
-enable_testing() #Включает поддержку тестирования в этом проекте, позволяя вам определять и запускать тесты с помощью встроенной платформы тестирования CMake.
-
-add_test(test_version test_version)
+add_test(test_version test_version) # Добавляет тест test_version в систему тестирования CMake.
